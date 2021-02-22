@@ -25,7 +25,7 @@ from sys import stdout
 from time import time
 
 PROC = 0
-FILE = 1
+CMD  = 1
 PEER = 2
 KEY  = 3
 
@@ -55,13 +55,14 @@ COLOR_RESET = style()
 
 
 def Percentile( a, p ):
-	f = float(p) * len(a)
+	assert len(a) > 0
+	f = float(p) * (len(a)-1)
 	i = int(f)
 	if i == len(a):
 		return a[-1]
 	if f.is_integer():
 		return a[i]
-	v = a[i:i+1]
+	v = a[i:i+2]
 	return ( min(v) + max(v) ) / 2
 
 def Transpose(tbl):
@@ -88,7 +89,7 @@ def Table( title, sub_title, unit, rows ):
 
 if __name__ == '__main__':
 	parser = ArgumentParser()
-	parser.add_argument('protocol', default='CRISP', choices=['CRISP','CHIP'], nargs='?', help='the protocol to test')
+	parser.add_argument('protocol', default='CRISP', choices=['CRISP','CHIP','OPAQUE'], nargs='?', help='the protocol to test')
 	parser.add_argument('-n', '--count', type=int, default='1000', help='number of iterations')
 	parser.add_argument('-ip', help='IP address of the remote peer')
 	parser.add_argument('--color', default='auto', choices=['always','never','auto'], help='show colors')
@@ -102,9 +103,15 @@ if __name__ == '__main__':
 	chdir( args.protocol )
 	times = OrderedDict()
 	if args.ip:
-		parties = ([None, 'alice.pwd', None, None],)
+		assert args.protocol != 'OPAQUE', 'OPAQUE over network is not yet supported'
+		parties = ([None, ['./key_exchange', 'alice.pwd'], None, None],)
 	else:
-		parties = ([None, 'alice.pwd', 'Bob', None], [None, 'bob.pwd','Alice', None])
+		if args.protocol == 'OPAQUE':
+			parties = ([None, ['./server'], None, None],
+					   [None, ['./client', 'Pa$$Word', 'Alice'], None, None])
+		else:
+			parties = ([None, ['./key_exchange', 'alice.pwd'], 'Bob', None],
+					   [None, ['./key_exchange', 'bob.pwd'], 'Alice', None])
 	print( 'Measuring {} over {} iterations:'.format(args.protocol, args.count) )
 
 	for i in range(args.count):
@@ -113,7 +120,7 @@ if __name__ == '__main__':
 		stdout.write('\r{:>6.2%} {:6} '.format(float(i)/args.count, i))
 		stdout.flush()
 		for p in parties:
-			p[PROC] = Popen(['./key_exchange', p[FILE]] + port, stdout=PIPE)
+			p[PROC] = Popen(p[CMD] + port, stdout=PIPE)
 		fail = False
 		stop = False
 		for j in range(len(parties)):
@@ -124,7 +131,7 @@ if __name__ == '__main__':
 					p[PROC].terminate()
 				print('User interrupt')
 				while True:
-					decision = raw_input('Stop? (y/N) ').lower()
+					decision = input('Stop? (y/N) ').lower()
 					if decision in ['y','yes']:
 						stop = True
 						break

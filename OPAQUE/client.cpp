@@ -33,7 +33,7 @@ int main( int argc, char *argv[] )
 
 	init_measure();
 
-	start_measure( "Generating user msg" );
+	start_measure( "U Generating message" );
 
 	// sid = identity
 	const char *identity = argv[2];
@@ -74,14 +74,14 @@ int main( int argc, char *argv[] )
 	/* Send message */
 
 #if MEASURE == MEASURE_ALL
-	start_measure( "Connecting", false );
+	start_measure( "U Connecting", false );
 #endif
 
 	const char      *ip = argc>4 ? argv[argc-2] : NULL ;
 	const uint16_t port = argc>3 ? (uint16_t) atoi( argv[argc-1] ) : 9999 ;
 	const int      sock = open_socket( ip, port );
 
-	start_measure( "Exchanging messages #1" );
+	start_measure( "U Exchanging messages #1" );
 
 	SEND( sock, { sid,   sizeof(sid)   },
 				{ ssid,  sizeof(ssid)  },
@@ -107,7 +107,7 @@ int main( int argc, char *argv[] )
 				{ c,     sizeof(c)     },
 				{ A_s,   sizeof(A_s)   } );
 
-	start_measure( "Generating Key" );
+	start_measure( "U Generating Key" );
 
 	// rw = H( pwd || beta^(1/r) )
 	SODIUM( core_ristretto255_is_valid_point, beta );
@@ -156,7 +156,7 @@ int main( int argc, char *argv[] )
 	static_assert( sizeof(ssid_pr) >= crypto_stream_NONCEBYTES, "Hash output too short for nonce" );
 	SODIUM( stream, (BYTE*) &out, sizeof(out), ssid_pr, K );
 
-	start_measure( "Validating Key" );
+	start_measure( "U Validating Key" );
 
 	// Compare A_s
 	if ( sodium_memcmp( A_s, out.A_s, sizeof(A_s) ) != 0 )
@@ -165,15 +165,15 @@ int main( int argc, char *argv[] )
 	}
 
 
-	start_measure( "Sending message #2" );
+	start_measure( "U Sending message #2" );
 
 	SEND( sock, { out.A_u, sizeof(out.A_u) } );
 
 	stop_measure();
 
 
-	print_total( "Total", ONLINE | OFFLINE );
-	print_total( "Total Online", ONLINE );
+	print_total( "U Total", ONLINE | OFFLINE );
+	print_total( "U Total Online", ONLINE );
 
 	printf("Shared key: ");
 	print_bytes( out.SK, sizeof(out.SK) );

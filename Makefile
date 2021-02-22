@@ -72,8 +72,6 @@ chip:   CHIP/alice.pwd  CHIP/bob.pwd  CHIP/carol.pwd  CHIP/key_exchange
 	./test.py CHIP
 
 opaque: OPAQUE/alice.pwd OPAQUE/bob.pwd OPAQUE/carol.pwd OPAQUE/client OPAQUE/server
-	OPAQUE/client $(NETWORK) $(PASSWORD) Alice & cd OPAQUE; ./server
-	echo "OPAQUE: not yet implemented"
-	exit 1
+	./test.py OPAQUE
 
-test: crisp chip
+test: crisp chip opaque

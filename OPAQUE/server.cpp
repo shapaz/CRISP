@@ -35,14 +35,14 @@ int main( int argc, char *argv[] )
 	init_measure();
 
 #if MEASURE == MEASURE_ALL
-	start_measure( "Connecting", false );
+	start_measure( "S Connecting", false );
 #endif
 
 	const char      *ip = argc>2 ? argv[argc-2] : NULL ;
 	const uint16_t port = argc>1 ? (uint16_t) atoi( argv[argc-1] ) : 9999 ;
 	const int      sock = open_socket( ip, port );
 
-	start_measure( "Receiving user msg #1" );
+	start_measure( "S Receiving message #1" );
 
 	BYTE sid[MAX_ID_BYTES + 1];
 	BYTE ssid[16];
@@ -56,14 +56,14 @@ int main( int argc, char *argv[] )
 				{ alpha, sizeof(alpha) } );
 
 
-	start_measure( "Validating points" );
+	start_measure( "S Validating points" );
 
 	SODIUM( core_ristretto255_is_valid_point, alpha );
 	SODIUM( core_ristretto255_is_valid_point, X_u );
 
 	/* Load data from password file */
 
-	start_measure( "Loading password file" );
+	start_measure( "S Loading password file" );
 
 	// Check sid is alpha-numeric to avoid path traversal.
 	char filename[ MAX_ID_BYTES + sizeof(".pwd") ];
@@ -95,7 +95,7 @@ int main( int argc, char *argv[] )
 	BYTE *c = pwd_file;
 
 
-	start_measure( "Generating Key" );
+	start_measure( "S Generating Key" );
 
 	// x_s \genR Zq
 	BYTE x_s[crypto_core_ristretto255_SCALARBYTES];
@@ -145,7 +145,7 @@ int main( int argc, char *argv[] )
 	SODIUM( stream, (BYTE*) &out, sizeof(out), ssid_pr, K );
 
 
-	start_measure( "Exchanging messages" );
+	start_measure( "S Exchanging messages" );
 
 	SEND( sock, { beta,    sizeof(beta)    },
 				{ X_s,     sizeof(X_s)     },
@@ -157,7 +157,7 @@ int main( int argc, char *argv[] )
 	RECV( sock, { A_u, sizeof(A_u) } );
 
 
-	start_measure( "Validating Key" );
+	start_measure( "S Validating Key" );
 
 	// Compare A_s
 	if ( sodium_memcmp( A_u, out.A_u, sizeof(A_u) ) != 0 )
@@ -167,8 +167,8 @@ int main( int argc, char *argv[] )
 
 	stop_measure();
 
-	print_total( "Total", ONLINE | OFFLINE );
-	print_total( "Total Online", ONLINE );
+	print_total( "S Total", ONLINE | OFFLINE );
+	print_total( "S Total Online", ONLINE );
 
 	printf("Shared key: ");
 	print_bytes( out.SK, sizeof(out.SK) );
