@@ -77,9 +77,9 @@ int main( int argc, char *argv[] )
 	start_measure( "Connecting", false );
 #endif
 
-	const char *ip = argc>3 ? argv[2] : NULL ;
-	const int port = argc>2 ? atoi( argv[argc>3?3:2] ) : 9999 ;
-	const int sock = open_socket( ip, port );
+	const char      *ip = argc>3 ? argv[argc-2] : NULL ;
+	const uint16_t port = argc>2 ? (uint16_t) atoi( argv[argc-1] ) : 9999 ;
+	const int      sock = open_socket( ip, port );
 
 	start_measure( "Exchanging messages" );
 

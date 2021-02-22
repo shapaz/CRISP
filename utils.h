@@ -48,12 +48,16 @@
 #define MEASURE						MEASURE_MAIN
 #endif
 
+#define crypto_core_ristretto255_is_valid_point(...)	\
+	( crypto_core_ristretto255_is_valid_point(__VA_ARGS__) ? 0 : -1 )
+
 #define SODIUM( func, ... )											 \
 {																	 \
 	int sodium_result = crypto_ ## func ( __VA_ARGS__ );			 \
 	if ( sodium_result != 0 )										 \
 	{																 \
-		error( 1, 0, "crypto_" #func " returned %d", sodium_result );\
+		error( 1, 0, "crypto_" #func " returned %d on "				 \
+			   __FILE__ ":%d", sodium_result, __LINE__ );			 \
 	}																 \
 }
 
@@ -110,7 +114,7 @@ size_t decode_BE4( const BYTE data[4] );
 
 BYTE *read_file( const char *path );
 
-int open_socket( const char *ip, int port );
+int open_socket( const char *ip, uint16_t port );
 
 static inline void print_bytes( const BYTE bytes[], size_t size )
 {

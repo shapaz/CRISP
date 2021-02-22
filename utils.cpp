@@ -132,7 +132,7 @@ BYTE *read_file( const char *path )
 }
 
 
-static int open_local_socket( int port )
+static int open_local_socket( uint16_t port )
 {
 	int sock = socket( PF_INET, SOCK_STREAM, IPPROTO_TCP );
 
@@ -200,7 +200,7 @@ static void reset( int, void *arg )
 	close( sock );
 }
 
-int open_socket( const char *ip, int port )
+int open_socket( const char *ip, uint16_t port )
 {
 	if ( ip == NULL )
 	{
@@ -305,7 +305,7 @@ void vrecv( int sock, struct iovec *parts, size_t count )
 	msg.msg_iov = parts;
 	msg.msg_iovlen = count;
 	ssize_t result = recvmsg( sock, &msg, 0 );
-	if ( result < 0 )
+	if ( result <= 0 )
 	{
 		error( 1, errno, "recvmsg failed" );
 	}
