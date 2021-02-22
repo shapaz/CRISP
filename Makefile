@@ -22,8 +22,12 @@ PASSWORD ?= 'Pa$$$$Word'
 PAIRING_LIB ?=MCL
 CC       := g++
 
-BINARIES := CRISP/gen_pwd_file CRISP/key_exchange CHIP/gen_pwd_file CHIP/key_exchange
-OBJECTS  := $(BINARIES:%=%.o) pake.o utils.o pairing.o
+CRISP_BINS	:=  CRISP/gen_pwd_file  CRISP/key_exchange
+CHIP_BINS	:=   CHIP/gen_pwd_file   CHIP/key_exchange
+OPAQUE_BINS	:= OPAQUE/gen_pwd_file OPAQUE/client OPAQUE/server
+BINARIES	:= $(CRISP_BINS) $(CHIP_BINS) $(OPAQUE_BINS)
+OBJECTS 	:= $(BINARIES:%=%.o) pake.o utils.o pairing.o
+
 override CXXFLAGS += -std=c++11 -g3 -O3 -Wall -Wextra -pedantic -Wconversion -ffunction-sections -fdata-sections -DPAIRING_LIB=$(PAIRING_LIB) -DUSE_COMPRESSION
 override LDFLAGS  += -Wl,--gc-sections
 LDLIBS   := -lgmp -lsodium -lrt
@@ -46,6 +50,11 @@ CRISP/key_exchange: CRISP/key_exchange.o pairing.o pake.o utils.o
 CHIP/gen_pwd_file: CHIP/gen_pwd_file.o utils.o
 CHIP/key_exchange: CHIP/key_exchange.o pake.o utils.o
 
+OPAQUE/gen_pwd_file: OPAQUE/gen_pwd_file.o utils.o
+OPAQUE/client:       OPAQUE/client.o utils.o
+OPAQUE/server:       OPAQUE/server.o utils.o
+
+
 %/alice.pwd: %/gen_pwd_file
 	$< $(NETWORK) $(PASSWORD) Alice > $@
 
@@ -55,10 +64,16 @@ CHIP/key_exchange: CHIP/key_exchange.o pake.o utils.o
 %/carol.pwd: %/gen_pwd_file
 	$< $(NETWORK) 'WrOnGPwD' Carol > $@
 
+
 crisp: CRISP/alice.pwd CRISP/bob.pwd CRISP/carol.pwd CRISP/key_exchange
 	./test.py CRISP
 
 chip:   CHIP/alice.pwd  CHIP/bob.pwd  CHIP/carol.pwd  CHIP/key_exchange
 	./test.py CHIP
+
+opaque: OPAQUE/alice.pwd OPAQUE/bob.pwd OPAQUE/carol.pwd OPAQUE/client OPAQUE/server
+	OPAQUE/client $(NETWORK) $(PASSWORD) Alice & cd OPAQUE; ./server
+	echo "OPAQUE: not yet implemented"
+	exit 1
 
 test: crisp chip
