@@ -62,12 +62,22 @@ typedef element_t GT_t;
 
 #elif PAIRING_LIB == MCL
 
-#include <mcl/bn_c256.h>
 
-#define MAX_Zr_BYTES				32
-#define MAX_G1_BYTES				32
-#define MAX_G2_BYTES				64
-#define MAX_GT_BYTES				384
+#define C_BN254		254
+#define C_BLS12_381	12381
+
+#if CURVE == C_BN254
+#include <mcl/bn_c256.h>
+#elif CURVE == C_BLS12_381
+#include <mcl/bn_c384_256.h>
+#else
+#error CURVE not supported
+#endif
+
+#define MAX_Zr_BYTES				( MCLBN_FR_UNIT_SIZE * 8 )
+#define MAX_G1_BYTES				( MCLBN_FP_UNIT_SIZE * 8 )
+#define MAX_G2_BYTES				( MAX_G1_BYTES * 2 )
+#define MAX_GT_BYTES				( MAX_G1_BYTES * 12 )
 
 typedef mclBnFr Zr_t;
 typedef mclBnG1 G1_t;

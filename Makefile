@@ -19,7 +19,9 @@
 
 NETWORK  ?= 'My home WiFi'
 PASSWORD ?= 'Pa$$$$Word'
-PAIRING_LIB ?=MCL
+PAIRING_LIB	?=MCL
+#CURVE	 ?=BN254
+CURVE	 ?=BLS12_381
 CC       := g++
 
 CRISP_BINS	:=  CRISP/gen_pwd_file  CRISP/key_exchange
@@ -28,13 +30,18 @@ OPAQUE_BINS	:= OPAQUE/gen_pwd_file OPAQUE/client OPAQUE/server
 BINARIES	:= $(CRISP_BINS) $(CHIP_BINS) $(OPAQUE_BINS)
 OBJECTS 	:= $(BINARIES:%=%.o) pake.o utils.o pairing.o
 
-override CXXFLAGS += -std=c++11 -g3 -O3 -Wall -Wextra -pedantic -Wconversion -ffunction-sections -fdata-sections -DPAIRING_LIB=$(PAIRING_LIB) -DUSE_COMPRESSION
+override CXXFLAGS += -std=c++11 -g3 -O3 -Wall -Wextra -pedantic -Wconversion -ffunction-sections -fdata-sections -DPAIRING_LIB=$(PAIRING_LIB) -DCURVE=C_$(CURVE) -DUSE_COMPRESSION
 override LDFLAGS  += -Wl,--gc-sections
 LDLIBS   := -lgmp -lsodium -lrt
 ifeq ($(PAIRING_LIB), PBC)
 LDLIBS += -lpbc
 else ifeq ($(PAIRING_LIB), MCL)
-LDLIBS += -lmclbn256 -lmcl
+ifeq ($(CURVE), BN254)
+LDLIBS += -lmclbn256
+else ifeq ($(CURVE), BLS12_381)
+LDLIBS += -lmclbn384_256
+endif
+LDLIBS += -lmcl
 else
 $(error "Unsupported PAIRING_LIB")
 endif

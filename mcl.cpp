@@ -19,9 +19,25 @@ struct Pairing
 {
 	Pairing()
 	{
-		if ( mclBn_init( MCL_BN254, MCLBN_COMPILED_TIME_VAR ) != 0 )
+		if ( mclBn_init(
+#if CURVE == C_BN254
+				MCL_BN254
+#elif CURVE == C_BLS12_381
+				MCL_BLS12_381
+#endif
+				, MCLBN_COMPILED_TIME_VAR ) != 0 )
 		{
 			error( 1, 0, "MCL initialization failed" );
+		}
+
+		if ( mclBn_getFrByteSize() != MAX_Zr_BYTES )
+		{
+			error( 1, 0, "MAX_Zr_BYTES != %u", mclBn_getFrByteSize() );
+		}
+
+		if ( mclBn_getFpByteSize() != MAX_G1_BYTES )
+		{
+			error( 1, 0, "MAX_G1_BYTES != %u", mclBn_getFpByteSize() );
 		}
 
 		#if 0	// TODO
@@ -64,7 +80,12 @@ G1::~G1()
 
 size_t G1::serialize( BYTE (&buffer)[MAX_G1_BYTES] ) const
 {
-	return mclBnG1_serialize( buffer, sizeof(buffer), &element );
+	size_t size = mclBnG1_serialize( buffer, sizeof(buffer), &element );
+	if ( size == 0 )
+	{
+		error( 1, 0, "Cannot serialize G1 element into %zu bytes", sizeof(buffer) );
+	}
+	return size;
 }
 
 size_t G1::deserialize( const BYTE (&buffer)[MAX_G1_BYTES] )
@@ -108,20 +129,32 @@ G2::~G2()
 void G2::set_generator()
 {
 	static const char g2_generator[] = "1"
+#if CURVE == C_BN254
 		" 12723517038133731887338407189719511622662176727675373276651903807414909099441"
         " 4168783608814932154536427934509895782246573715297911553964171371032945126671"
         " 13891744915211034074451795021214165905772212241412891944830863846330766296736"
         " 7937318970632701341203597196594272556916396164729705624521405069090520231616";
+#elif CURVE == C_BLS12_381
+        " 352701069587466618187139116011060144890029952792775240219908644239793785735715026873347600343865175952761926303160"
+        " 3059144344244213709971259814753781636986470325476647558659373206291635324768958432433509563104347017837885763365758"
+        " 1985150602287291935568054521177171638300868978215655730859378665066344726373823718423869104263333984641494340347905"
+        " 927553665492332455747201965776037880757740193453592970025027978793976877002675564980949289727957565575433344219582";
+#endif
 	mclBnG2_setStr( &element, g2_generator, sizeof(g2_generator)-1, 10 );
 	if ( ! mclBnG2_isValid( &element ) )
 	{
-		error( 1, 0, "Invalid G2 element" );
+		error( 1, 0, "Invalid G2 element!" );
 	}
 }
 
 size_t G2::serialize( BYTE (&buffer)[MAX_G2_BYTES] ) const
 {
-	return mclBnG2_serialize( buffer, sizeof(buffer), &element );
+	size_t size = mclBnG2_serialize( buffer, sizeof(buffer), &element );
+	if ( size == 0 )
+	{
+		error( 1, 0, "Cannot serialize G2 element into %zu bytes", sizeof(buffer) );
+	}
+	return size;
 }
 
 size_t G2::deserialize( const BYTE (&buffer)[MAX_G2_BYTES] )
@@ -162,7 +195,12 @@ GT::~GT()
 
 size_t GT::serialize( BYTE (&buffer)[MAX_GT_BYTES] ) const
 {
-	return mclBnGT_serialize( buffer, sizeof(buffer), &element );
+	size_t size = mclBnGT_serialize( buffer, sizeof(buffer), &element );
+	if ( size == 0 )
+	{
+		error( 1, 0, "Cannot serialize GT element into %zu bytes", sizeof(buffer) );
+	}
+	return size;
 }
 
 void GT::pairing( const G1 &g1, const G2 &g2 )
