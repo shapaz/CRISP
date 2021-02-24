@@ -136,7 +136,8 @@ int main( int argc, char *argv[] )
 
 	BYTE t_buf[MAX_GT_BYTES];
 	BYTE S[crypto_hash_sha256_BYTES];
-	TAGGED_HASH( S, 4, { t_buf, t.serialize( t_buf ) },
+	TAGGED_HASH( S, 4, { network, network_size },
+					   { t_buf, t.serialize( t_buf ) },
 					   { is_first ? IDi    : IDj   , MAX_ID_BYTES   },
 					   { is_first ? Ai_buf : Aj_buf, sizeof(Ai_buf) },
 					   { is_first ? Ci_buf : Cj_buf, sizeof(Ci_buf) },
@@ -179,7 +180,7 @@ int main( int argc, char *argv[] )
 
 	G1 Hj;
 	BYTE IDj_hash[crypto_hash_sha256_BYTES];
-	TAGGED_HASH( IDj_hash, 2, { IDj, MAX_ID_BYTES } );
+	TAGGED_HASH( IDj_hash, 2, { network, network_size }, { IDj, MAX_ID_BYTES } );
 	Hj.from_hash( IDj_hash, sizeof(IDj_hash) );
 
 	GT t1, t2;

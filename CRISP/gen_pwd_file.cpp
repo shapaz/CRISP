@@ -56,7 +56,7 @@ int main( int argc, char *argv[] )
 	memcpy( id, identity, id_len );
 	memset( id + id_len, '\0', MAX_ID_BYTES - id_len );
 	BYTE id_hash[crypto_hash_sha256_BYTES];
-	TAGGED_HASH( id_hash, 2, { id, MAX_ID_BYTES } );
+	TAGGED_HASH( id_hash, 2, { (const BYTE*) network, network_size }, { id, MAX_ID_BYTES } );
 	fwrite( id, 1, MAX_ID_BYTES, stdout );
 
 	G2 g2;

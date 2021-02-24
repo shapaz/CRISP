@@ -119,7 +119,7 @@ int main( int argc, char *argv[] )
 
 	/* hj = H2( IDj, Xj ) */
 	BYTE IDj_hash[crypto_core_ristretto255_NONREDUCEDSCALARBYTES];
-	TAGGED_HASH( IDj_hash, 2, { IDj, MAX_ID_BYTES }, { Xj, sizeof(Xj) } );
+	TAGGED_HASH( IDj_hash, 2, { network, network_size }, { IDj, MAX_ID_BYTES }, { Xj, sizeof(Xj) } );
 	BYTE hj[crypto_core_ristretto255_SCALARBYTES];
 	crypto_core_ristretto255_scalar_reduce( hj, IDj_hash );
 
@@ -133,7 +133,8 @@ int main( int argc, char *argv[] )
 
 
 	BYTE S[crypto_hash_sha256_BYTES];
-	TAGGED_HASH( S, 4, { A, sizeof(A) },
+	TAGGED_HASH( S, 4, { network, network_size },
+					   { A, sizeof(A) },
 					   { B, sizeof(B) },
 					   { is_first ? IDi : IDj, MAX_ID_BYTES },
 					   { is_first ? Xi  : Xj , sizeof(Xj)   },

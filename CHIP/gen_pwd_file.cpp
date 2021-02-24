@@ -69,7 +69,7 @@ int main( int argc, char *argv[] )
 	fwrite( Y, 1, sizeof(Y), stdout );
 
 	BYTE id_hash[crypto_core_ristretto255_NONREDUCEDSCALARBYTES];
-	TAGGED_HASH( id_hash, 2, { id, MAX_ID_BYTES }, { X, sizeof(X) } );
+	TAGGED_HASH( id_hash, 2, { (const BYTE*) network, network_size }, { id, MAX_ID_BYTES }, { X, sizeof(X) } );
 	BYTE h[crypto_core_ristretto255_SCALARBYTES];
 	crypto_core_ristretto255_scalar_reduce( h, id_hash );
 
